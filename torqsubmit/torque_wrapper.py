@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -15,7 +15,7 @@ python {file}
 
 INIT_ENV = base64.b64decode(os.environ["__PY_T_SUBMIT_ENV"])
 
-ROOT_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.environ["__PY_T_SUBMIT_DIRNAME"]
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_executor.py')
 
 init_file = tempfile.NamedTemporaryFile(suffix=",sh", delete=False)
