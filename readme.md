@@ -12,4 +12,3 @@ Works by serializing the enviorment and callable function to the
 enviorment variables (beware there is size limit --- althrough it is in
 range of megabytes).
 
-** NOT TESTED **
