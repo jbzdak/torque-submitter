@@ -8,3 +8,4 @@ callable = partial(print, "Hello World!")
 from torqsubmit.submit import submit
 
 submit(callable)
+
