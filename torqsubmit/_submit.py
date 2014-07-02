@@ -10,7 +10,7 @@ ROOT_DIR = os.path.dirname(__file__)
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_wrapper.py')
 
 
-def submit(callable, enviorment="true", qsub_args = tuple()):
+def submit(callable, enviorment="true", qsub_args=tuple()):
     """
 
     :param callable callable: Function that will be called inside torque job.
@@ -29,8 +29,6 @@ def submit(callable, enviorment="true", qsub_args = tuple()):
 
     call = ['qsub']
     call.append('-V')
-    # call.append("-x __PY_T_SUBMIT_ENV")
-    # call.append("-x __PY_T_SUBMIT_CALL")
     call.extend(qsub_args)
     call.append(EXECUTOR)
 
