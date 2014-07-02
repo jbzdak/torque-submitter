@@ -8,7 +8,7 @@ setup(
     name='torque-submit',
     version='0.0.1',
     packages=['torqsubmit'],
-    url='',
+    url='https://github.com/jbzdak/torque-submitter',
     license='Apache 2.0',
     author='Jacek Bzdak',
     author_email='jbzdak@gmail.com',
