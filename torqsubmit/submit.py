@@ -9,9 +9,17 @@ import subprocess
 ROOT_DIR = os.path.dirname(__file__)
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_wrapper.py')
 
-print EXECUTOR
 
 def submit(callable, enviorment="true", qsub_args = tuple()):
+    """
+
+    :param callable callable: Function that will be called inside torque job.
+        Should be pickleable (either instancemethod of class defined on
+        module level, or function defined on module level).
+    :param str enviorment: Bash lines that will be executed before starting
+        script that will reconstruct and call callable
+    :param list qsub_args: List of arguments to qsub command
+    """
     call = base64.b64encode(pickle.dumps(callable))
     enviorment = base64.b64encode(enviorment)
     environ = copy.copy(os.environ)
