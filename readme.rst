@@ -13,6 +13,9 @@ Works by serializing the enviorment and callable function to the
 enviorment variables (beware there is size limit --- althrough it is in
 range of megabytes).
 
+Enviorment can be initialized using arbirtary bash script --- this script 
+will be sourced before running provided python callable. 
+
 Example
 =======
 
