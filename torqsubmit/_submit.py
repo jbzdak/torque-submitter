@@ -2,7 +2,10 @@
 
 import copy
 import os
-import pickle
+try:
+    import dill as pickle
+except ImportError:
+    import pickle
 import base64
 import subprocess
 
