@@ -8,7 +8,6 @@ import six
 import pickle
 import os
 
-from enum import Enum
 
 class Mode(object):
 
@@ -19,6 +18,7 @@ class Mode(object):
     def fromstring(cls, str):
         return getattr(cls, str.upper(), None)
 
+
 class StoreProperty(object):
 
     MODE = "MODE"
@@ -26,13 +26,17 @@ class StoreProperty(object):
     ENVIORMENT = "ENVIORMENT"
     DIRNAME = "DIRNAME"
     TASK_COUNT = "TASK_COUNT"
+    TASK_CONCURRENCY = "TASK_CONCURRENCY"
+    OVERRIDE_NCPUS = "OVERRIDE_NCPUS"
 
     @classmethod
     def TASK_NO(self, no):
         return "TASK_{}".format(no)
 
 
-class StoreNotUsed(Exception): pass
+class StoreNotUsed(Exception):
+    pass
+
 
 class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
 
@@ -68,9 +72,6 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
         self.__assert_many()
         return self.store[StoreProperty.MAP_KWARGS]
 
-    def cpus_per_task(self):
-        return self.store[StoreProperty]
-
     @property
     def task(self):
         self.__assert_single()
@@ -83,6 +84,14 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
 
     def get_task(self, no):
         return self._load_task(self.store[StoreProperty.TASK_NO(no)])
+
+    @property
+    def task_concurrency(self):
+        return self.store.get(StoreProperty.TASK_CONCURRENCY, None)
+
+    @property
+    def override_ncpus(self):
+        return self.store.get(StoreProperty.OVERRIDE_NCPUS, False)
 
     def __assert_single(self):
         assert self.mode == Mode.SINGLE_TASK
@@ -164,3 +173,14 @@ class FileBasedStore(TorqeSubmitStore):
             pickle.dump(store, f)
             f.close()
         return {"__PY_T_FILE": file, "__PY_T_STORE": "FILE"}
+
+
+def load_store():
+    for Store in [FileBasedStore, EnvStore]:
+        try:
+            s = Store()
+            s.load()
+            return s
+        except StoreNotUsed:
+            pass
+    raise ValueError()

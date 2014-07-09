@@ -2,7 +2,8 @@
 import os
 import unittest
 
-from torqsubmit.store import StoreProperty, Mode, EnvStore, FileBasedStore
+from torqsubmit.store import StoreProperty, Mode, EnvStore, FileBasedStore, \
+    load_store
 
 import dill
 
@@ -26,8 +27,11 @@ class TestStore(object):
         os.environ.update(cls.STORE_TYPE.save_store(cls.store_data))
 
     def setUp(self):
-        self.store = self.STORE_TYPE()
+        self.store = load_store()
         self.store.load()
+
+    def test_type(self):
+        self.assertEqual(self.STORE_TYPE, type(self.store))
 
     def test_mode(self):
         self.assertEqual(self.store.mode, Mode.MANY_TASKS)
