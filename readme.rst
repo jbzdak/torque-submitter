@@ -11,18 +11,18 @@ Features:
 
 Works by serializing the enviorment and callable function to the
 enviorment variables (beware there is size limit --- althrough it is in
-range of megabytes).
+range of megabytes). For serialization we use ``dill`` if avilable or ``pickle``.
 
 Enviorment can be initialized using arbirtary bash script --- this script 
-will be sourced before running provided python callable. 
+will be sourced before running provided python callable.
 
 Example
 =======
 
 Example without enviorment: 
 
-.. code-block:: python 
-        
+.. code-block:: python
+
     from __future__ import print_function
     from functools import partial
     
