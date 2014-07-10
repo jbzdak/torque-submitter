@@ -1,13 +1,29 @@
 # -*- coding: utf-8 -*-
 import base64
+import multiprocessing
 import os
-try:
-    import dill as pickle
-except ImportError:
-    import pickle
+import sys
+from torqsubmit.store import load_store, Mode, TorqeSubmitStore
+from torqsubmit._misc import callable_executor, update_environ
 
-CALLABLE = base64.b64decode(os.environ["__PY_T_SUBMIT_CALL"])
+store = load_store()
 
-callable = pickle.loads(CALLABLE)
+assert isinstance(store, TorqeSubmitStore)
 
-callable()
+if store.mode == Mode.SINGLE_TASK:
+    store.task()
+    sys.exit(0)
+
+cpus = os.environ.get("PBS_NP", 1)
+tasks = store.tasks
+
+
+if cpus == 1:
+    for t in tasks():
+        t()
+else:
+    processes = int(cpus / store.task_concurrency)
+    p = multiprocessing.Pool(processes, initializer=update_environ, initargs=store, maxtasksperchild=store.max_tasks_per_child)
+    p.map(callable_executor, store.tasks_serialized, chunksize=store.map_chunksize)
+    p.join()
+    p.close()

@@ -2,8 +2,11 @@
 
 import abc
 import base64
+from contextlib import contextmanager
 from functools import total_ordering
+import functools
 from tempfile import gettempdir, mkstemp
+import itertools
 import six
 import pickle
 import os
@@ -28,6 +31,8 @@ class StoreProperty(object):
     TASK_COUNT = "TASK_COUNT"
     TASK_CONCURRENCY = "TASK_CONCURRENCY"
     OVERRIDE_NCPUS = "OVERRIDE_NCPUS"
+    MAX_TASKS_PER_CHILD = "MAX_TASKS_PER_CHILD"
+    MAP_CHUNKSIZE = "MAP_CHUNKSIZE"
 
     @classmethod
     def TASK_NO(self, no):
@@ -68,14 +73,36 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
         return Mode.fromstring(self.store[StoreProperty.MODE])
 
     @property
-    def map_kwargs(self):
-        self.__assert_many()
-        return self.store[StoreProperty.MAP_KWARGS]
+    def map_chunksize(self):
+        return self.store[StoreProperty.MAP_CHUNKSIZE]
 
     @property
     def task(self):
         self.__assert_single()
         return self._load_task(self.store[StoreProperty.TASK])
+
+    @property
+    def max_tasks_per_child(self):
+        return self.store.get(StoreProperty.MAX_TASKS_PER_CHILD, 1)
+
+    @property
+    def tasks(self):
+
+        def generator():
+            for ii in range(self.task_count):
+                yield self.get_task(ii)
+        return generator()
+
+    @property
+    def tasks_serialized(self):
+        def generator():
+            for ii in range(self.task_count):
+                yield self, ii
+        return generator()
+
+    @property
+    def task_concurrency(self):
+        return self.store.get(StoreProperty.TASK_CONCURRENCY, 1)
 
     @property
     def task_count(self):
@@ -150,6 +177,8 @@ class EnvStore(TorqeSubmitStore):
 
 class FileBasedStore(TorqeSubmitStore):
 
+
+
     def load(self):
         if os.environ.get("__PY_T_{}".format("STORE")) != "FILE":
             raise StoreNotUsed()
@@ -160,6 +189,10 @@ class FileBasedStore(TorqeSubmitStore):
     @property
     def store(self):
         return self.__store
+
+    @classmethod
+    def set_tepmdir(self, tmpdir):
+        os.environ["__PY_T_TEMPDIR",] = tmpdir
 
     @classmethod
     def get_tempdir(self):

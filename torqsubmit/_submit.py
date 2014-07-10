@@ -2,6 +2,8 @@
 
 import copy
 import os
+from torqsubmit.store import FileBasedStore, StoreProperty, Mode
+
 try:
     import dill as pickle
 except ImportError:
@@ -36,3 +38,56 @@ def submit(callable, enviorment="true", qsub_args=tuple()):
     call.append(EXECUTOR)
 
     subprocess.check_call(call, env=environ)
+
+
+class Submitter(object):
+    def __init__(self):
+        super(Submitter, self).__init__()
+        self.StoreClass = FileBasedStore
+        self.tasks = {}
+        self.store = {}
+        self.enviorment = "true"
+        self.dirname = ROOT_DIR
+        self.qsub_args = tuple()
+        self.processes = None
+        self.memory_gb = None
+        self.queue = "i3d"
+
+    def __update_qsub_ags(self):
+        result = []
+        if self.processes is not None:
+            result.extend(["-l", "nodes=1:ppn={}".format(self.processes)])
+        if self.memory_gb is not None:
+            result.extend(["-l", "mem={}GB".format(self.memory_gb)])
+        if self.queue is not None:
+            result.extend(["-q", self.queue])
+        return result
+
+    def __update_tasks(self):
+        if len(self.tasks) == 1:
+            self.store[StoreProperty.MODE] = Mode.SINGLE_TASK
+            self.store[StoreProperty.TASK] = self.StoreClass.pickle_task(self.tasks[0])
+        else:
+            self.store[StoreProperty.MODE] = Mode.MANY_TASKS
+            for ii, task in enumerate(self.tasks):
+                self.store[StoreProperty.MODE] = Mode.SINGLE_TASK
+                self.store[StoreProperty.TASK_NO(ii)] = self.StoreClass.pickle_task(task)
+
+    def __update_environ(self):
+        return {
+            "__PY_T_SUBMIT_ENV": self.enviorment,
+            "__PY_T_SUBMIT_DIRNAME": self.dirname
+        }
+
+    def submit(self):
+        self.__update_tasks()
+        env = dict(os.environ)
+        env.update(self.__update_environ())
+        env.update(self.StoreClass.save_store(self.store))
+        call = ['qsub']
+        call.append('-V')
+        call.extend(self.qsub_args)
+        call.extend(self.__update_qsub_ags())
+        call.append(EXECUTOR)
+
+        subprocess.check_call(call, env=env)
