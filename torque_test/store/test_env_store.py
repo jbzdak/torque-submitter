@@ -7,7 +7,6 @@ from torqsubmit.store import StoreProperty, Mode, EnvStore, FileBasedStore, \
 
 import dill
 
-
 class TestStore(object):
 
     STORE_TYPE = None
@@ -42,6 +41,9 @@ class TestStore(object):
     def test_task_no(self):
         self.assertEqual(self.store.get_task(0)(), 0)
         self.assertEqual(self.store.get_task(1)(), 1)
+
+    def test_concurrency(self):
+        self.assertEqual(self.store.task_concurrency, 1)
 
     @classmethod
     def tearDownClass(cls):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-def update_environ(task_concurrency):
+def update_environ(store):
     import os
-    os.environ['PBS_NP'] = task_concurrency
+    os.environ['PBS_NP'] = str(store.task_concurrency)
 
 def callable_executor(data):
     store, ii = data

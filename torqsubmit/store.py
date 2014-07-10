@@ -74,7 +74,7 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
 
     @property
     def map_chunksize(self):
-        return self.store[StoreProperty.MAP_CHUNKSIZE]
+        return self.store.get(StoreProperty.MAP_CHUNKSIZE, 1)
 
     @property
     def task(self):
@@ -114,7 +114,7 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
 
     @property
     def task_concurrency(self):
-        return self.store.get(StoreProperty.TASK_CONCURRENCY, None)
+        return self.store.get(StoreProperty.TASK_CONCURRENCY, 1)
 
     @property
     def override_ncpus(self):
@@ -216,4 +216,7 @@ def load_store():
             return s
         except StoreNotUsed:
             pass
-    raise ValueError()
+    print("ENVIRON")
+    print(os.environ)
+    print("END")
+    raise ValueError("Couldn't load any store")

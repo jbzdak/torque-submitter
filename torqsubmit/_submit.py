@@ -69,13 +69,14 @@ class Submitter(object):
             self.store[StoreProperty.TASK] = self.StoreClass.pickle_task(self.tasks[0])
         else:
             self.store[StoreProperty.MODE] = Mode.MANY_TASKS
+            self.store[StoreProperty.TASK_COUNT] = len(self.tasks)
             for ii, task in enumerate(self.tasks):
-                self.store[StoreProperty.MODE] = Mode.SINGLE_TASK
                 self.store[StoreProperty.TASK_NO(ii)] = self.StoreClass.pickle_task(task)
+
 
     def __update_environ(self):
         return {
-            "__PY_T_SUBMIT_ENV": self.enviorment,
+            "__PY_T_SUBMIT_ENV": base64.b64encode(self.enviorment),
             "__PY_T_SUBMIT_DIRNAME": self.dirname
         }
 

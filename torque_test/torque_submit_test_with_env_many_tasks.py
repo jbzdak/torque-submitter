@@ -7,13 +7,18 @@ callable = partial(print, "Hello World!")
 
 from torqsubmit._submit import submit, Submitter
 
+
 ENV = """
+source ${HOME}/.bashrc
+workon torque-submit
 export MSG="Hello World!"
 """
+
 
 def print_from_env():
     import os
     print(os.environ["MSG"])
+
 
 s = Submitter()
 s.enviorment = ENV
