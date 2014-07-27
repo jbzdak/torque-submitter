@@ -18,7 +18,7 @@ assert isinstance(store, TorqeSubmitStore)
 # print (store.store)
 
 if store.mode == Mode.SINGLE_TASK:
-    store.task[0]()
+    store.task()
     sys.exit(0)
 
 cpus = int(os.environ.get("PBS_NP", 1))

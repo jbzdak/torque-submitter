@@ -5,7 +5,7 @@ from functools import partial
 
 callable = partial(print, "Hello World!")
 
-from torqsubmit._submit import submit, Submitter
+from torqsubmit._submit import Submitter
 
 
 ENV = """
