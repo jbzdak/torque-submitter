@@ -1,1 +1,1 @@
-from ._submit import submit, Submitter
+from ._submit import Submitter
