@@ -192,7 +192,7 @@ class FileBasedStore(TorqeSubmitStore):
 
     @classmethod
     def set_tepmdir(self, tmpdir):
-        os.environ["__PY_T_TEMPDIR",] = tmpdir
+        os.environ["__PY_T_TEMPDIR"] = tmpdir
 
     @classmethod
     def get_tempdir(self):
