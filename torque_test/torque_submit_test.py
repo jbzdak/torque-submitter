@@ -5,9 +5,8 @@ from functools import partial
 
 callable = partial(print, "Hello World!")
 
-from torqsubmit import submit, Submitter
+from torqsubmit import Submitter
 
 s = Submitter()
 s.tasks = [callable]
 s.submit()
-

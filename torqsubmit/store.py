@@ -177,8 +177,6 @@ class EnvStore(TorqeSubmitStore):
 
 class FileBasedStore(TorqeSubmitStore):
 
-
-
     def load(self):
         if os.environ.get("__PY_T_{}".format("STORE")) != "FILE":
             raise StoreNotUsed()
