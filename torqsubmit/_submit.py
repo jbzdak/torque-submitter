@@ -27,6 +27,12 @@ class Submitter(object):
         self.processes = None
         self.memory_gb = None
         self.queue = "i3d"
+        self.use_pbs_array = False
+        self.array_tasks_to_run_in_paralel = None
+
+    @property
+    def __launch_array_task(self):
+        return self.use_pbs_array and len(self.tasks) > 1
 
     def __update_qsub_ags(self):
         result = []
@@ -43,17 +49,28 @@ class Submitter(object):
             self.store[StoreProperty.MODE] = Mode.SINGLE_TASK
             self.store[StoreProperty.TASK] = self.StoreClass.pickle_task(self.tasks[0])
         else:
-            self.store[StoreProperty.MODE] = Mode.MANY_TASKS
+            if self.use_pbs_array is False:
+                self.store[StoreProperty.MODE] = Mode.MANY_TASKS
+            else:
+                self.store[StoreProperty.MODE] = Mode.PBS_ARRAY
             self.store[StoreProperty.TASK_COUNT] = len(self.tasks)
             for ii, task in enumerate(self.tasks):
                 self.store[StoreProperty.TASK_NO(ii)] = self.StoreClass.pickle_task(task)
-
 
     def __update_environ(self):
         return {
             "__PY_T_SUBMIT_ENV": base64.b64encode(self.enviorment),
             "__PY_T_SUBMIT_DIRNAME": self.dirname
         }
+
+    def __format_pbs_array_argument(self):
+        array_spec = "{}-{}".format(0, len(self.tasks) - 1)
+        if self.array_tasks_to_run_in_paralel is not None:
+            array_spec += '%{}'.format(self.array_tasks_to_run_in_paralel)
+        return [
+            '-t',
+            array_spec
+        ]
 
     def submit(self):
         self.__update_tasks()
@@ -62,6 +79,8 @@ class Submitter(object):
         env.update(self.StoreClass.save_store(self.store))
         call = ['qsub']
         call.append('-V')
+        if self.__launch_array_task:
+            call.extend(self.__format_pbs_array_argument())
         call.extend(self.qsub_args)
         call.extend(self.__update_qsub_ags())
         call.append(EXECUTOR)

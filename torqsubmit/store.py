@@ -15,7 +15,19 @@ import os
 class Mode(object):
 
     SINGLE_TASK = "SINGLE_TASK"
+    """
+    Execute a single task in PBS and exit
+    """
     MANY_TASKS = "MANY_TASKS"
+    """
+    Execute many tasks either concurrently on synhroneously. In case of
+    concurrent execution concurrency is controlled by python queue.
+    """
+    PBS_ARRAY = "PBS_ARRAY"
+    """
+    Execute many tasks either concurrently on synhroneously. In both cases
+    concurrency is done by PBS array task.
+    """
 
     @classmethod
     def fromstring(cls, str):
@@ -25,14 +37,38 @@ class Mode(object):
 class StoreProperty(object):
 
     MODE = "MODE"
+    """
+    :see:`Mode`
+    """
     TASK = "TASK"
-    ENVIORMENT = "ENVIORMENT"
-    DIRNAME = "DIRNAME"
+    """
+    Callable that represents a single task to be executed.
+    """
     TASK_COUNT = "TASK_COUNT"
-    TASK_CONCURRENCY = "TASK_CONCURRENCY"
-    OVERRIDE_NCPUS = "OVERRIDE_NCPUS"
+    """
+    If there are many tasks here we store task count.
+    """
+    ENVIORMENT = "ENVIORMENT"
+    """
+    Bash snippet that sets up the enviorment
+    """
+
+    CPUS_PER_TASK = "CPUS_PER_TASK"
+    """
+    Number of CPUs allocated to each task.
+    """
+
     MAX_TASKS_PER_CHILD = "MAX_TASKS_PER_CHILD"
+    """
+    In case of ``MANY_TASKS`` mode controlls how often python process will
+    be torn down. It will be torn down (and then recreated) after processing
+    this many tasks.
+    """
     MAP_CHUNKSIZE = "MAP_CHUNKSIZE"
+    """
+     In case of ``MANY_TASKS`` it can be used to increase number of tasks submitted
+     to the python process in one batch.
+    """
 
     @classmethod
     def TASK_NO(self, no):
@@ -101,8 +137,8 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
         return generator()
 
     @property
-    def task_concurrency(self):
-        return self.store.get(StoreProperty.TASK_CONCURRENCY, 1)
+    def cpus_per_task(self):
+        return self.store.get(StoreProperty.CPUS_PER_TASK, 1)
 
     @property
     def task_count(self):
@@ -111,14 +147,6 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
 
     def get_task(self, no):
         return self._load_task(self.store[StoreProperty.TASK_NO(no)])
-
-    @property
-    def task_concurrency(self):
-        return self.store.get(StoreProperty.TASK_CONCURRENCY, 1)
-
-    @property
-    def override_ncpus(self):
-        return self.store.get(StoreProperty.OVERRIDE_NCPUS, False)
 
     def __assert_single(self):
         assert self.mode == Mode.SINGLE_TASK

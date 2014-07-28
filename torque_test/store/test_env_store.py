@@ -43,7 +43,7 @@ class TestStore(object):
         self.assertEqual(self.store.get_task(1)(), 1)
 
     def test_concurrency(self):
-        self.assertEqual(self.store.task_concurrency, 1)
+        self.assertEqual(self.store.cpus_per_task, 1)
 
     @classmethod
     def tearDownClass(cls):
