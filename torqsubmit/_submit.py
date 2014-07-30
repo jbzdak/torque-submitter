@@ -2,6 +2,9 @@
 
 import copy
 import os
+from subprocess import Popen, STDOUT
+from time import sleep
+from matplotlib.compat.subprocess import PIPE
 from torqsubmit.store import FileBasedStore, StoreProperty, Mode
 
 try:
@@ -13,6 +16,8 @@ import subprocess
 
 ROOT_DIR = os.path.dirname(__file__)
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_wrapper.py')
+
+
 
 
 class Submitter(object):
@@ -72,6 +77,29 @@ class Submitter(object):
             array_spec
         ]
 
+
+    def __submit(self, call, env):
+        output_chunks = []
+        process = Popen(call, env=env, stderr=STDOUT, stdout=PIPE)
+        while process.returncode is None:
+            output_chunks.append(process.communicate())
+            sleep(0.1)
+        stdout = "".join([c[0] for c in output_chunks])
+        stderr = "".join([c[1] for c in output_chunks])
+
+        if process.returncode == 0:
+            return stdout, stderr
+
+        exc = CalledProcessError(process.returncode, call)
+        exc.stdout = stdout
+        exc.stderr = stderr
+
+        print(stdout)
+        print(stderr)
+
+        raise exc
+
+
     def submit(self):
         self.__update_tasks()
         env = dict(os.environ)
@@ -85,4 +113,4 @@ class Submitter(object):
         call.extend(self.__update_qsub_ags())
         call.append(EXECUTOR)
 
-        subprocess.check_call(call, env=env)
+        self.__submit(call, env=env)
