@@ -2,9 +2,8 @@
 
 import copy
 import os
-from subprocess import Popen, STDOUT
+from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from time import sleep
-from matplotlib.compat.subprocess import PIPE
 from torqsubmit.store import FileBasedStore, StoreProperty, Mode
 
 try:
@@ -113,4 +112,4 @@ class Submitter(object):
         call.extend(self.__update_qsub_ags())
         call.append(EXECUTOR)
 
-        self.__submit(call, env=env)
+        return self.__submit(call, env=env)
