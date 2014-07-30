@@ -84,8 +84,8 @@ class Submitter(object):
         while process.returncode is None:
             output_chunks.append(process.communicate())
             sleep(0.1)
-        stdout = "".join([c[0] for c in output_chunks])
-        stderr = "".join([c[1] for c in output_chunks])
+        stdout = "".join([c[0] for c in output_chunks if c[0] is not None])
+        stderr = "".join([c[1] for c in output_chunks if c[1] is not None])
 
         if process.returncode == 0:
             return stdout, stderr
