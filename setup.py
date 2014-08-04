@@ -12,5 +12,12 @@ setup(
     license='Apache 2.0',
     author='Jacek Bzdak',
     author_email='jbzdak@gmail.com',
-    description='Python script to submit torque jobs in a very hackish way'
+    description='Python script to submit torque jobs in a very hackish way',
+    classifiers="""
+Development Status :: 4 - Beta
+Intended Audience :: Developers
+License :: OSI Approved :: Apache Software License
+Programming Language :: Python :: 2.7
+Programming Language :: Python :: 2 :: Only
+    """
 )
