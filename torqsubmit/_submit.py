@@ -17,8 +17,6 @@ ROOT_DIR = os.path.dirname(__file__)
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_wrapper.py')
 
 
-
-
 class Submitter(object):
     def __init__(self):
         super(Submitter, self).__init__()

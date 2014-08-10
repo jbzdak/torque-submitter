@@ -7,10 +7,11 @@ from functools import total_ordering
 import functools
 from tempfile import gettempdir, mkstemp
 import itertools
+import warnings
 import six
 import pickle
 import os
-
+import warning
 
 class Mode(object):
 
@@ -76,6 +77,10 @@ class StoreProperty(object):
 
 
 class StoreNotUsed(Exception):
+    pass
+
+
+class EnvStoreToManyTasks(Exception):
     pass
 
 
@@ -186,8 +191,15 @@ class _EnvDict(dict):
 
 
 class EnvStore(TorqeSubmitStore):
+
+    max_number_of_tasks = 10
+
     @classmethod
     def save_store(self, store):
+        if self.mode == Mode.MANY_TASKS:
+            if self.task_count > self.max_number_of_tasks:
+                raise EnvStoreToManyTasks("Too much tasks passed to env store, this might cause issues with PBS")
+
         result = {}
         for k, v in store.items():
             result["__PY_T_{}".format(k)] = base64.b64encode(pickle.dumps(v))
