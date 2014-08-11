@@ -11,7 +11,6 @@ import warnings
 import six
 import pickle
 import os
-import warning
 
 class Mode(object):
 
@@ -157,7 +156,7 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
         assert self.mode == Mode.SINGLE_TASK
 
     def __assert_many(self):
-        assert self.mode == Mode.MANY_TASKS
+        assert self.mode in (Mode.MANY_TASKS, Mode.PBS_ARRAY)
 
     @property
     def _pickle(self):
@@ -195,10 +194,12 @@ class EnvStore(TorqeSubmitStore):
     max_number_of_tasks = 10
 
     @classmethod
-    def save_store(self, store):
-        if self.mode == Mode.MANY_TASKS:
-            if self.task_count > self.max_number_of_tasks:
-                raise EnvStoreToManyTasks("Too much tasks passed to env store, this might cause issues with PBS")
+    def save_store(cls, store):
+        if store[StoreProperty.MODE] in (Mode.MANY_TASKS, Mode.PBS_ARRAY):
+            if store[StoreProperty.TASK_COUNT] > cls.max_number_of_tasks:
+                raise EnvStoreToManyTasks(
+                    "Too much tasks passed to env store, this might cause issues with PBS, so please use other store, "
+                    "or remove this check (at your own risk!)s")
 
         result = {}
         for k, v in store.items():

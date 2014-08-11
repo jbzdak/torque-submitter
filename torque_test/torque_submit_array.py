@@ -31,6 +31,6 @@ s.StoreClass = EnvStore
 s.use_pbs_array = True
 s.array_tasks_to_run_in_paralel = None
 s.enviorment = ENV
-s.tasks = [partial(print_from_env, ii) for ii in range(80)]
+s.tasks = [partial(print_from_env, ii) for ii in range(11)]
 s.submit()
 # -*- coding: utf-8 -*-
