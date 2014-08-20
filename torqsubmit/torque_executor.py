@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import base64
 import multiprocessing
 import os
 import sys
+
 from torqsubmit.store import load_store, Mode, TorqeSubmitStore
 from torqsubmit._misc import callable_executor, update_environ
+
 
 # for k, v in os.environ.items():
 #     if "__PY_T" in k:

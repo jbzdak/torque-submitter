@@ -2,15 +2,12 @@
 
 import abc
 import base64
-from contextlib import contextmanager
-from functools import total_ordering
-import functools
 from tempfile import gettempdir, mkstemp
-import itertools
-import warnings
-import six
 import pickle
 import os
+
+import six
+
 
 class Mode(object):
 

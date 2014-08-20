@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import os
 from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from time import sleep
+
 from torqsubmit.store import FileBasedStore, StoreProperty, Mode
+
 
 try:
     import dill as pickle
 except ImportError:
     import pickle
 import base64
-import subprocess
 
 ROOT_DIR = os.path.dirname(__file__)
 EXECUTOR = os.path.join(ROOT_DIR, 'torque_wrapper.py')
