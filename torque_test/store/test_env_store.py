@@ -35,8 +35,8 @@ class TestStore(object):
         cls.store_data[StoreProperty.TASK_COUNT] = 10
         cls.store_data[StoreProperty.TASK_NO(0)] = dill.dumps(lambda: 0)
         cls.store_data[StoreProperty.TASK_NO(1)] = dill.dumps(lambda: 1)
-
-        environ.update(cls.STORE_TYPE.save_store(cls.store_data))
+        cls.saved_store = cls.STORE_TYPE.save_store(cls.store_data)
+        environ.update(cls.saved_store)
 
     def setUp(self):
         self.store = load_store()
@@ -72,3 +72,8 @@ class TestEnvStore(TestStore, unittest.TestCase):
 class TestFileStore(TestStore, unittest.TestCase):
 
     STORE_TYPE = FileBasedStore
+
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.saved_store[b'__PY_T_FILE'])
+

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from time import sleep
 
@@ -32,6 +33,21 @@ class Submitter(object):
         self.use_pbs_array = False
         self.array_tasks_to_run_in_paralel = None
 
+    def guess_virtualenv(self):
+        """
+        Sets enviorment in such way that current virtual enviorment is used
+        :return:
+        """
+        import sys
+        py_dir = os.path.dirname(sys.executable)
+        activate = os.path.join(py_dir, 'activate')
+        if not os.path.exists(activate):
+            raise ValueError("Couldn't guess virtualenv")
+        self.enviorment = """
+            source {}
+        """.format(activate)
+
+
     @property
     def __launch_array_task(self):
         return self.use_pbs_array and len(self.tasks) > 1
@@ -61,7 +77,7 @@ class Submitter(object):
 
     def __update_environ(self):
         return {
-            "__PY_T_SUBMIT_ENV": base64.b64encode(self.enviorment),
+            "__PY_T_SUBMIT_ENV": self.enviorment,
             "__PY_T_SUBMIT_DIRNAME": self.dirname
         }
 
@@ -81,8 +97,8 @@ class Submitter(object):
         while process.returncode is None:
             output_chunks.append(process.communicate())
             sleep(0.1)
-        stdout = "".join([c[0] for c in output_chunks if c[0] is not None])
-        stderr = "".join([c[1] for c in output_chunks if c[1] is not None])
+        stdout = "".join([c[0].decode('utf-8') for c in output_chunks if c[0] is not None])
+        stderr = "".join([c[1].decode('utf-8') for c in output_chunks if c[1] is not None])
 
         if process.returncode == 0:
             return stdout, stderr
