@@ -1,19 +1,32 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals, absolute_import
+from nose.tools.nontrivial import nottest, istest
 import os
 import unittest
+
+# from nose import
 
 from torqsubmit.store import StoreProperty, Mode, EnvStore, FileBasedStore, \
     load_store
 
 import dill
 
+import six
+
+if six.PY3:
+    environ = os.environb
+else:
+    environ = os.environ
+
+@nottest
 class TestStore(object):
 
     STORE_TYPE = None
 
     @classmethod
     def setUpClass(cls):
-        super(TestStore, cls).setUpClass()
+        # super(TestStore, cls).setUpClass()
 
         cls.env = dict(os.environ)
 
@@ -23,7 +36,7 @@ class TestStore(object):
         cls.store_data[StoreProperty.TASK_NO(0)] = dill.dumps(lambda: 0)
         cls.store_data[StoreProperty.TASK_NO(1)] = dill.dumps(lambda: 1)
 
-        os.environ.update(cls.STORE_TYPE.save_store(cls.store_data))
+        environ.update(cls.STORE_TYPE.save_store(cls.store_data))
 
     def setUp(self):
         self.store = load_store()
@@ -50,12 +63,12 @@ class TestStore(object):
         os.environ.clear()
         os.environ.update(cls.env)
 
-
+@istest
 class TestEnvStore(TestStore, unittest.TestCase):
 
     STORE_TYPE = EnvStore
 
-
+@istest
 class TestFileStore(TestStore, unittest.TestCase):
 
     STORE_TYPE = FileBasedStore

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals, absolute_import
+
 import abc
 import base64
 from tempfile import gettempdir, mkstemp
@@ -178,6 +180,21 @@ class TorqeSubmitStore(six.with_metaclass(abc.ABCMeta, object)):
             import pickle
         return pickle.dumps(task)
 
+    @classmethod
+    def __to_str(cls, v):
+        if isinstance(v, str):
+            return v.encode('utf-8')
+        return v
+
+    @classmethod
+    def _filter_store(cls, store):
+        if six.PY2:
+            return store
+        return dict([
+            (cls.__to_str(k), cls.__to_str(v)) for k, v in store.items()
+        ])
+
+
 
 class _EnvDict(dict):
     def __missing__(self, key):
@@ -202,7 +219,7 @@ class EnvStore(TorqeSubmitStore):
         for k, v in store.items():
             result["__PY_T_{}".format(k)] = base64.b64encode(pickle.dumps(v))
         result["__PY_T_{}".format("STORE")] = "ENV"
-        return result
+        return cls._filter_store(result)
 
     def load(self):
         if os.environ.get("__PY_T_{}".format("STORE")) != "ENV":
@@ -219,7 +236,7 @@ class FileBasedStore(TorqeSubmitStore):
         if os.environ.get("__PY_T_{}".format("STORE")) != "FILE":
             raise StoreNotUsed()
         import pickle
-        with open(os.environ['__PY_T_FILE']) as f:
+        with open(os.environ['__PY_T_FILE'], 'rb') as f:
             self.__store = pickle.load(f)
 
     @property
@@ -235,13 +252,13 @@ class FileBasedStore(TorqeSubmitStore):
         return os.environ.get("__PY_T_TEMPDIR", gettempdir())
 
     @classmethod
-    def save_store(self, store):
+    def save_store(cls, store):
         import pickle
-        opened, file = mkstemp(dir=self.get_tempdir())
-        with open(file, 'w') as f:
+        opened, file = mkstemp(dir=cls.get_tempdir())
+        with open(file, 'wb') as f:
             pickle.dump(store, f)
             f.close()
-        return {"__PY_T_FILE": file, "__PY_T_STORE": "FILE"}
+        return {b"__PY_T_FILE": file.encode("utf-8"), b"__PY_T_STORE": b"FILE"}
 
 
 def load_store():
