@@ -1,3 +1,5 @@
 .idea
 **pyc
 torque_submit.egg-info/
+.tox
+venv
