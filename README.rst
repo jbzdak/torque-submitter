@@ -12,7 +12,7 @@ Features:
 
 Dependencies:
 
-* Working python 2.7 enviorment
+* Working python 2.7/3.4 enviorment
 * Some python dependencies (see ``REQUIREMENTS``)
 * Working ``qsub`` command (no need for other PBS/torque stuff).
 
