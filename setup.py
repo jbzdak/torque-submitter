@@ -6,7 +6,7 @@ except ImportError:
 
 setup(
     name='torque-submit',
-    version='0.0.3',
+    version='0.0.4',
     packages=['torqsubmit'],
     url='https://github.com/jbzdak/torque-submitter',
     license='Apache 2.0',
