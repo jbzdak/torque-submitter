@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+from functools import partial
 
 import os
 import sys
 from subprocess import Popen, STDOUT, PIPE, CalledProcessError
 from time import sleep
+import math
+from torqsubmit._misc import exec_many_func
 
 from torqsubmit.store import FileBasedStore, StoreProperty, Mode
 
@@ -22,6 +25,7 @@ class Submitter(object):
     def __init__(self):
         super(Submitter, self).__init__()
         self.StoreClass = FileBasedStore
+        self.total_number_of_pbs_tasks = -1
         self.tasks = []
         self.store = {}
         self.enviorment = "true"
@@ -62,18 +66,36 @@ class Submitter(object):
             result.extend(["-q", self.queue])
         return result
 
+    @classmethod
+    def __chunks(cls, l, n):
+        """ Yield successive n-sized chunks from l.
+        """
+        for i in range(0, len(l), n):
+            yield l[i:i+n]
+
+    def __update_tasks_many(self):
+
+        if self.array_tasks_to_run_in_paralel > 0:
+            split = math.ceil(len(self.tasks)/self.array_tasks_to_run_in_paralel)
+            self.tasks = [partial(exec_many_func, chunk) for chunk in self.__chunks(self.tasks, split)]
+
+        if self.use_pbs_array is False:
+            self.store[StoreProperty.MODE] = Mode.MANY_TASKS
+        else:
+            self.store[StoreProperty.MODE] = Mode.PBS_ARRAY
+        self.store[StoreProperty.TASK_COUNT] = len(self.tasks)
+        for ii, task in enumerate(self.tasks):
+            self.store[StoreProperty.TASK_NO(ii)] = self.StoreClass.pickle_task(task)
+
+
     def __update_tasks(self):
         if len(self.tasks) == 1:
             self.store[StoreProperty.MODE] = Mode.SINGLE_TASK
             self.store[StoreProperty.TASK] = self.StoreClass.pickle_task(self.tasks[0])
         else:
-            if self.use_pbs_array is False:
-                self.store[StoreProperty.MODE] = Mode.MANY_TASKS
-            else:
-                self.store[StoreProperty.MODE] = Mode.PBS_ARRAY
-            self.store[StoreProperty.TASK_COUNT] = len(self.tasks)
-            for ii, task in enumerate(self.tasks):
-                self.store[StoreProperty.TASK_NO(ii)] = self.StoreClass.pickle_task(task)
+            self.__update_tasks_many()
+
+
 
     def __update_environ(self):
         return {
